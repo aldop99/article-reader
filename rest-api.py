@@ -1,6 +1,8 @@
 from bson import ObjectId
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
+import time  
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -8,12 +10,22 @@ client = MongoClient('mongodb://localhost:27017')
 db = client["news_database"]
 collections = db["users"]
 
+timestamp = time.time()
+date_time = datetime.fromtimestamp(timestamp)
+str_date_time = date_time.strftime("%d-%m-%Y, %H:%M:%S")
+print("Current timestamp", str_date_time)
+
+
 @app.route('/')
 def start():
     return jsonify({'message': 'Welcome from Flask.'})
 
 @app.route('/add-user', methods=['POST'])
 def add_user():
+    timestamp = time.time()
+    date_time = datetime.fromtimestamp(timestamp)
+    str_date_time = date_time.strftime("%d-%m-%Y, %H:%M:%S")
+
     user = {'city': request.json['city'],
             'email': request.json['email'],
             'topic1': request.json['topic1'],
@@ -23,7 +35,8 @@ def add_user():
             'topic5': request.json['topic5'],
             'topic6': request.json['topic6'],
             'topic7': request.json['topic7'],
-            'topic8': request.json['topic8']
+            'topic8': request.json['topic8'],
+            'timestamp': str_date_time
             }
     # Insert the new user into the users collection
     user_id = collections.insert_one(user).inserted_id
@@ -77,4 +90,4 @@ def delete_user(user_id):
   return jsonify({'success': True, 'user': user})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    app.run(debug=True, port=5001, host='0.0.0.0')
