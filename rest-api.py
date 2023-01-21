@@ -10,12 +10,6 @@ client = MongoClient('mongodb://localhost:27017')
 db = client["news_database"]
 collections = db["users"]
 
-timestamp = time.time()
-date_time = datetime.fromtimestamp(timestamp)
-str_date_time = date_time.strftime("%d-%m-%Y, %H:%M:%S")
-print("Current timestamp", str_date_time)
-
-
 @app.route('/')
 def start():
     return jsonify({'message': 'Welcome from Flask.'})
