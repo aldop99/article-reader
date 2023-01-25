@@ -10,9 +10,6 @@ client = MongoClient('mongodb://localhost:27017')
 db = client["news_database"]
 collections = db["users"]
 
-@app.route('/')
-def start():
-    return jsonify({'message': 'Welcome from Flask.'})
 
 @app.route('/add-user', methods=['POST'])
 def add_user():
@@ -41,7 +38,7 @@ def add_user():
     # Return a success message and the new user
     return jsonify({'success': True, 'user': new_user})
 
-@app.route('/users', methods=['GET'])
+@app.route('/', methods=['GET'])
 def get_users():
     # Find all users in the collection
     users = list(collections.find())
@@ -50,6 +47,21 @@ def get_users():
         user['_id'] = str(user['_id'])
     # Return a success message and the list of users
     return jsonify({'success': True, 'users': users})
+
+@app.route('/user-articles/<user_id>/<topic>', methods=['GET'])
+def get_user_article(user_id, topic):
+    article = []
+    # Convert the ObjectIds to strings
+    user = collections.find_one({'user': ObjectId(user_id), 'topic': topic})
+    my_collection = db[topic]
+    # x = my_collection.find_one()
+    
+    for x in my_collection.find():
+       article.append(x['value'])
+        
+    # print(x)    
+    return jsonify({'success': True, 'user': user_id, 'topic': topic , "articles": article})
+
 
 @app.route('/update-user/<user_id>', methods=['PUT'])
 def update_user(user_id):
@@ -84,4 +96,4 @@ def delete_user(user_id):
   return jsonify({'success': True, 'user': user})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001, host='0.0.0.0')
+    app.run(debug=True, port=5000, host='0.0.0.0')
