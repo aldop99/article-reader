@@ -6,12 +6,11 @@ import logging as log
 import requests
 from dotenv import load_dotenv
 import os
+import datetime
 
 load_dotenv()
 
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
-
-# TODO Add MediaWiki Functions and 'source_domain_name' in collection variable
 
 collection = ['Elon_Musk', 'Ukraine', 'IOT', 'Smart_Home',
               'Metaverse', 'Google', 'Blockchain', 'NASA']
@@ -24,6 +23,13 @@ while True:
         response = requests.get(url)
 
         data = response.json()
+
+        # changes date format
+        for article in data['articles']:
+            published_at = article['publishedAt']
+            published_at = datetime.datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
+            article['publishedAt'] = published_at.strftime("%d %B %Y")
+
         articles = data.get('articles')
         
         print(response)

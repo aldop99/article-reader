@@ -2,21 +2,26 @@ from kafka import KafkaConsumer
 from pymongo import MongoClient
 import datetime
 import json
+import socket
+import socks
 
-consumer = KafkaConsumer('my-topic', bootstrap_servers='localhost:9092')
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['news_database']
 collection = db
 
 topics = ['Elon_Musk', 'Ukraine', 'IOT', 'Smart_Home', 'Metaverse', 'Google', 'Blockchain', 'NASA']
-
+proxy = socks.socksocket()
+proxy.set_proxy(socks.SOCKS5, 'proxy.example.com', 1080)
 consumer = KafkaConsumer(
     *topics,
-    bootstrap_servers=['localhost:9092'],
+    bootstrap_servers=['20.251.50.253:9092'],
     auto_offset_reset='earliest',
     enable_auto_commit=True,
-    group_id='my-group')
+    group_id='my-group',
+    api_version=(0,10),security_protocol='PLAINTEXT', socket_options={'socket': proxy})
+    
+
 
 for message in consumer:
     i = 0

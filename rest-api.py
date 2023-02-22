@@ -3,11 +3,17 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 import time  
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+from graph import *
+
+load_dotenv()
 
 app = Flask(__name__)
 
+db_name = os.environ.get("DB_NAME")
 client = MongoClient('mongodb://localhost:27017')
-db = client["news_database"]
+db = client[db_name]
 collections = db["users"]
 
 
@@ -62,6 +68,11 @@ def get_user_article(user_id, topic):
     # print(x)    
     return jsonify({'success': True, 'user': user_id, 'topic': topic , "articles": article})
 
+@app.route('/user-articles/<article_id>', methods=['GET'])
+def get_article_recomendation(article_id):
+    recomended_article = search_node(article_id)
+    return jsonify({'success': True, 'given_article_id': article_id, 'recomended_article': recomended_article})
+    # http://localhost:5000/user-articles/63dd801da0af182eb96581e1
 
 @app.route('/update-user/<user_id>', methods=['PUT'])
 def update_user(user_id):

@@ -8,7 +8,7 @@ Run with pip
 pip install -r requirements.txt
 ```
 
-Create a .env file in the files directory and paste your [News API](https://choosealicense.com/licenses/mit/) key
+Create a .env file in the files directory and paste your [News API](https://newsapi.org/) key
 ```
 NEWSAPI_KEY=YOUR NEWS API KEY
 ```
