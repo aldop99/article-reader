@@ -1,0 +1,92 @@
+- hosts: all
+
+  become: yes
+
+  tasks:
+    - name: install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        update_cache: yes
+
+    - name: add apt-key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+
+    - name: add docker repo
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+
+    - name: install docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        update_cache: yes
+
+    - name: install python package manager
+      apt:
+        name: python3-pip
+
+    - name: install python sdk
+      become_user: "azureuser"
+      pip:
+        name:
+          - docker
+          - docker-compose
+
+    - name: pull image azure
+      become_user: "azureuser"
+      docker_image:
+        name: mongo
+        source: pull
+
+    - name: Create Kafka directory
+      file:
+        path: /opt/kafka
+        state: directory
+        mode: "0644"
+      become: true
+
+    - name: Download Kafka binary
+      get_url:
+        url: "https://archive.apache.org/dist/kafka/3.3.1/kafka_2.13-3.3.1.tgz"
+        dest: "/opt/kafka/kafka_2.13-3.3.1.tgz"
+        mode: "0644"
+      become: true
+
+    - name: Extract Kafka binary
+      unarchive:
+        src: "/opt/kafka/kafka_2.13-3.3.1.tgz"
+        dest: "/opt/kafka"
+        remote_src: true
+      become: true
+
+    - name: Copy scripts
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: "producer.py", dest: "/opt/producer.py" }
+        - { src: "consumer.py", dest: "/opt/consumer.py" }
+        - { src: "rest-api.py", dest: "/opt/rest-api.py" }
+
+    - name: Start MongoDB container
+      docker_container:
+        name: my-mongodb
+        image: mongo
+        state: started
+        restart_policy: always
+        ports:
+          - "27017:27017"
+
+    - name: Start Zookeeper Service
+      shell: sudo /opt/kafka/kafka_2.13-3.3.1/bin/zookeeper-server-start.sh /opt/kafka/kafka_2.13-3.3.1/config/zookeeper.properties
+
+    - name: Start Kafka
+      shell: sudo /opt/kafka/kafka_2.13-3.3.1/bin/kafka-server-start.sh /opt/kafka/kafka_2.13-3.3.1/config/server.properties
